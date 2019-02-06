@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -24,13 +25,15 @@ import java.util.regex.Pattern;
 @Service
 public class DriverServiceImpl implements DriverService {
 
-    private static String LICENCE_PLATE_PATTERN = "[A-Z]{2}-[0-9]{3}";
-    private static String TIME_FORMAT = "HH:mm:ss";
-    private static String DATE_FORMAT = "yyyy/MM/dd";
+    private final String LICENCE_PLATE_PATTERN = "^[A-Z]{2,7}[A-Z0-9]{1,6}$";
+    private final String TIME_FORMAT = "HH:mm:ss";
+    private final String DATE_FORMAT = "yyyy/MM/dd";
+    private final String BASE_URL = "/driver";
     
     private Logger logger = LoggerFactory.getLogger(DriverServiceImpl.class);
 
-    private static final String BASE_URL = "/driver";
+
+
     private final DriverMapper driverMapper;
     private final DayProfitService dayProfitService;
     private final DriverRepository driverRepository;
@@ -96,7 +99,7 @@ public class DriverServiceImpl implements DriverService {
                 .orElseThrow(ResourceNotFoundException::new);
 
         returnedDriverDTO.setDriverUrl(getDriverUrl(driverRepository.findById(id).get()));
-        dayProfitService.saveOrUpdateDayProfitWithGivenDate(returnedDriverDTO.getTransactionDay());
+        dayProfitService.saveOrUpdateDayProfitWithGivenDate(returnedDriverDTO.getTransactionDay(), returnedDriverDTO.getCurrencyType());
         return returnedDriverDTO;
     }
 
@@ -108,7 +111,7 @@ public class DriverServiceImpl implements DriverService {
                 .orElseThrow(ResourceNotFoundException::new);
 
         driverDTO.setDriverUrl(getDriverUrl(driverRepository.findByLicensePlate(licensePlate).get()));
-        dayProfitService.saveOrUpdateDayProfitWithGivenDate(driverDTO.getTransactionDay());
+        dayProfitService.saveOrUpdateDayProfitWithGivenDate(driverDTO.getTransactionDay(), driverDTO.getCurrencyType());
         return driverDTO;
     }
 
@@ -157,7 +160,7 @@ public class DriverServiceImpl implements DriverService {
     private DriverDTO setStartTimeAndTransactionDayToGivenDriverAndSaveChangesInDatabase(Driver driver){
         driver.setTicketActive(true);
 
-        String formattedTime = calculateCurrentDateAndReturnTimeAsString();
+        String formattedTime = calculateCurrentTimeAndReturnTimeAsString();
         driver.setStartTime(formattedTime);
 
         String formattedDate = calculateCurrentDateAndReturnTimeAsString();

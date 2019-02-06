@@ -60,11 +60,11 @@ public class DayProfitServiceImpl implements DayProfitService {
     }
 
     @Override
-    public void saveOrUpdateDayProfitWithGivenDate(String date) {
+    public void saveOrUpdateDayProfitWithGivenDate(String date, CurrencyType currencyType) {
         Optional<DayProfit> optionalDayProfit = dayProfitRepository.findByDate(date);
 
         if(optionalDayProfit.isPresent()) {
-            updateDayProfitWithSpecifiedCurrency(date, optionalDayProfit.get().getCurrencyType());
+            updateDayProfitWithSpecifiedCurrency(date, currencyType);
         } else {
             createNewDayWithInitialValuesAndSaveInDatabase(date);
         }
