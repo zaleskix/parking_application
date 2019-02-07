@@ -20,10 +20,10 @@ public class DriverController {
         this.driverService = driverService;
     }
 
-    @PostMapping("/start")
+    @PostMapping("/start/{driverType}/{currencyType}/")
     @ResponseStatus(HttpStatus.CREATED)
-    public DriverDTO startParingkMeter(@RequestBody String licensePlate) {
-        return driverService.startParkingMeterByLicensePlate(licensePlate);
+    public DriverDTO startParingkMeter(@RequestBody String licensePlate, @PathVariable String currencyType, @PathVariable String driverType) {
+        return driverService.startParkingMeterByLicensePlate(licensePlate, driverType, currencyType);
 
     }
 

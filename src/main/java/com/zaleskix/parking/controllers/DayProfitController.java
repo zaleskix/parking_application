@@ -27,12 +27,12 @@ public class DayProfitController {
         return dayProfitService.checkAmountOfProfitOnTheGivenDayWithSpecifiedCurrency(date, currencyType);
     }
 
-    @GetMapping("/{year}/{month}/{day}/show/currencyType")
+    @GetMapping("/{year}/{month}/{day}/show/{currencyType}/")
     @ResponseStatus(HttpStatus.OK)
     public DayProfitDTO getDayProfitInfo(@PathVariable String year, @PathVariable String month,
                                          @PathVariable String day, @PathVariable String currencyType) {
 
-        String date = month + "/" + day + "/" + year;
+        String date = year + "/" + month + "/" + day;
         date = dayProfitService.checkThatDateIsValidAndReturnDateAsString(date);
         return dayProfitService.getDayProfitAsDTOWithSpecifiedCurrencyIncluded(date, currencyType);
     }

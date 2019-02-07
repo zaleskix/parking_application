@@ -8,6 +8,7 @@ import com.zaleskix.parking.mappers.DayProfitMapper;
 import com.zaleskix.parking.models.DayProfitDTO;
 import com.zaleskix.parking.repositories.DayProfitRepository;
 import com.zaleskix.parking.repositories.DriverRepository;
+import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,15 +43,15 @@ public class DayProfitServiceImpl implements DayProfitService {
     @Override
     public DayProfitDTO getDayProfitAsDTOWithSpecifiedCurrencyIncluded(String date, String currencyType) {
 
-        return dayProfitRepository.findByDate(date)
-                .map(dayProfitMapper::dayProfitToDayProfitDTO)
-                .map(dayProfitDTOreturned -> {
-                    dayProfitDTOreturned
-                            .setDayUrl(getDayProfitBaseRestAPIUrl(date));
-                    dayProfitDTOreturned.setCurrencyType(CurrencyType.valueOf(currencyType));
-                    return dayProfitDTOreturned;
-                })
-                .orElseThrow(ResourceNotFoundException::new);
+        if (dayProfitRepository.findByDate(date).isPresent()){
+            DayProfit dayProfit = dayProfitRepository.findByDate(date).get();
+            DayProfitDTO dayProfitDTO = dayProfitMapper.dayProfitToDayProfitDTO(dayProfit);
+            dayProfitDTO.setDayUrl(getDayProfitBaseRestAPIUrl(date));
+            return dayProfitDTO;
+        } else {
+            logger.error("Day profit is not present in database");
+            return null;
+        }
 
     }
 
@@ -66,7 +67,7 @@ public class DayProfitServiceImpl implements DayProfitService {
         if(optionalDayProfit.isPresent()) {
             updateDayProfitWithSpecifiedCurrency(date, currencyType);
         } else {
-            createNewDayWithInitialValuesAndSaveInDatabase(date);
+            createNewDayWithInitialValuesAndSaveInDatabase(date, currencyType);
         }
 
     }
@@ -85,7 +86,8 @@ public class DayProfitServiceImpl implements DayProfitService {
         
         if (dayProfitRepository.findByDate(date).isPresent()) {
             DayProfit dayProfit = dayProfitRepository.findByDate(date).get();
-            dayProfit.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date, currencyType).getAmount());
+            dayProfit.setCurrencyType(currencyType);
+            dayProfit.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
             saveDayWithGivenDataInDatabaseAndReturnDTO(dayProfit);
         } else {
             logger.error("Given data is not valid. Day profit with given data does not exist.");
@@ -93,11 +95,12 @@ public class DayProfitServiceImpl implements DayProfitService {
 
     }
 
-    private DayProfitDTO createNewDayWithInitialValuesAndSaveInDatabase(String date) {
+    private DayProfitDTO createNewDayWithInitialValuesAndSaveInDatabase(String date, CurrencyType currencyType) {
 
         DayProfitDTO dayProfitDTO = new DayProfitDTO();
         dayProfitDTO.setDate(date);
-        dayProfitDTO.setProfit(BigDecimal.valueOf(0));
+        dayProfitDTO.setCurrencyType(currencyType);
+        dayProfitDTO.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
 
         return saveDayWithGivenDataInDatabaseAndReturnDTO(dayProfitMapper.dayProfitDTOToDayProfit(dayProfitDTO));
     }
@@ -115,12 +118,12 @@ public class DayProfitServiceImpl implements DayProfitService {
     private Money calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(String date, CurrencyType currencyType) {
 
         Iterable<Driver> drivers = driverRepository.findAll();
-
-        Money profit = Money.parse(currencyType.toString() + " 0.0");
+        CurrencyUnit currencyUnit = CurrencyUnit.of(currencyType.toString());
+        Money profit = Money.of(currencyUnit, new BigDecimal(0));
 
         for (Driver driver : drivers) {
             if (Objects.equals(driver.getTransactionDay(), date)) {
-                profit.plus(driver.getAmountToPay());
+                profit = profit.plus(driver.getAmountToPay());
             }
         }
 

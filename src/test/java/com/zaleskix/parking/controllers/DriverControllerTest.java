@@ -4,6 +4,8 @@ package com.zaleskix.parking.controllers;
 import com.zaleskix.parking.ParkingApplication;
 import com.zaleskix.parking.domain.CurrencyType;
 
+import com.zaleskix.parking.domain.Driver;
+import com.zaleskix.parking.domain.DriverType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,6 +38,8 @@ public class DriverControllerTest extends AbstractRestControllerTest {
 
     private final String TIME_PATTERN = "HH:mm:ss";
     private final String DATE_FORMAT = "yyyy/MM/dd";
+    private final String DRIVER_TYPE = "REGULAR";
+    private final String CURRENCY_TYPE = "PLN";
 
     private final BigDecimal STARTED_AMOUNT_TO_PAY = new BigDecimal(0.00);
     private final boolean TICKET_IS_ACTIVE = true;
@@ -58,7 +62,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
 
         String licencePlate = "TEST123";
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -75,7 +79,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
 
         String licencePlate = "x";
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -88,7 +92,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
 
         String licencePlate = "TEST123412356";
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -101,7 +105,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
 
         String licencePlate = "TEST223";
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -137,7 +141,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
         String licencePlate = "TEST323";
         String startTime = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(TIME_PATTERN);
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -183,7 +187,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
         String licencePlate = "TEST523";
         String startTime = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(TIME_PATTERN);
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -224,7 +228,7 @@ public class DriverControllerTest extends AbstractRestControllerTest {
         String licencePlate = "TEST623";
         String startTime = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(TIME_PATTERN);
 
-        mockMvc.perform(post(DriverController.BASE_URL + "/start")
+        mockMvc.perform(post(DriverController.BASE_URL + "/start/" + DRIVER_TYPE + "/" + CURRENCY_TYPE + "/")
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL)
                 .content(licencePlate))
@@ -244,7 +248,9 @@ public class DriverControllerTest extends AbstractRestControllerTest {
     }
 
 
-
+    //=====================
+    // HELPERS METHODS
+    //=====================
 
     private String getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(String pattern) {
         Date currDate = new Date();

@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 
 public interface DriverService {
 
-    DriverDTO startParkingMeterByLicensePlate(String licensePlate);
+    DriverDTO startParkingMeterByLicensePlate(String licensePlate, String driverType, String currencyType);
 
     DriverDTO stopParkingMeterById(String id);
 

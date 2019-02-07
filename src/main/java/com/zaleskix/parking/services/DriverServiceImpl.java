@@ -45,7 +45,7 @@ public class DriverServiceImpl implements DriverService {
     }
 
     @Override
-    public DriverDTO startParkingMeterByLicensePlate(String licensePlate) {
+    public DriverDTO startParkingMeterByLicensePlate(String licensePlate, String driverType, String currecnyType) {
 
         if (! Pattern.matches(LICENCE_PLATE_PATTERN, licensePlate)) {
             logger.error("This is not valid licence plate");
@@ -56,11 +56,15 @@ public class DriverServiceImpl implements DriverService {
             logger.info("Vehicle with given licence plate exist in database. Updating existing driver info ...");
             Driver driver = driverRepository.findByLicensePlate(licensePlate).get();
             driver.setAmountToPay(BigDecimal.valueOf(0));
+            driver.setCurrencyType(CurrencyType.valueOf(currecnyType));
+            driver.setDriverType(DriverType.valueOf(driverType));
             driver.setStopTime(null);
             return setStartTimeAndTransactionDayToGivenDriverAndSaveChangesInDatabase(driver);
         } else {
             logger.info("Vehicle with given licence plate not exist in database. Creating new Driver object ...");
             Driver driver = new Driver();
+            driver.setDriverType(DriverType.valueOf(driverType));
+            driver.setCurrencyType(CurrencyType.valueOf(currecnyType));
             driver.setLicensePlate(licensePlate);
             return setStartTimeAndTransactionDayToGivenDriverAndSaveChangesInDatabase(driver);
         }

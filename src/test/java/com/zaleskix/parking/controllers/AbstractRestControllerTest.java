@@ -1,9 +1,7 @@
 package com.zaleskix.parking.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Test;
 
-import java.util.regex.Pattern;
 
 public abstract class AbstractRestControllerTest {
 
