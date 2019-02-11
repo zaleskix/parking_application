@@ -1,6 +1,8 @@
-package com.zaleskix.parking.controllers;
+package com.zaleskix.parking.controllersIT;
 
 import com.zaleskix.parking.ParkingApplication;
+import com.zaleskix.parking.controllers.DayProfitController;
+import com.zaleskix.parking.controllers.DriverController;
 import com.zaleskix.parking.domain.CurrencyType;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +24,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,7 +31,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ParkingApplication.class)
 @WebAppConfiguration
-public class DayProfitControllerTest extends AbstractRestControllerTest {
+public class DayProfitControllerTest {
 
     private final String DATE_FORMAT = "yyyy/MM/dd";
     private final CurrencyType PLN_CURRENCY_TYPE = CurrencyType.PLN;
@@ -67,7 +68,6 @@ public class DayProfitControllerTest extends AbstractRestControllerTest {
                 .andExpect(content().string("1.00"));
     }
 
-
     @Test
     public void shouldReturnDayProfitAsBigDecimalCorrectlyWhenManyDriversPayForParking() throws Exception {
 
@@ -87,8 +87,6 @@ public class DayProfitControllerTest extends AbstractRestControllerTest {
                 .andExpect(content().string("3.00"));
     }
 
-
-    //("/{year}/{month}/{day}/show/currencyType")
     @Test
     public void shouldReturnDayProfitDTOCorrectly() throws Exception {
 

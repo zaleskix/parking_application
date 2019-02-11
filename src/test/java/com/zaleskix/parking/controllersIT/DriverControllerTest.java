@@ -1,11 +1,10 @@
-package com.zaleskix.parking.controllers;
+package com.zaleskix.parking.controllersIT;
 
 
 import com.zaleskix.parking.ParkingApplication;
+import com.zaleskix.parking.controllers.DriverController;
 import com.zaleskix.parking.domain.CurrencyType;
 
-import com.zaleskix.parking.domain.Driver;
-import com.zaleskix.parking.domain.DriverType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = ParkingApplication.class)
 @WebAppConfiguration
-public class DriverControllerTest extends AbstractRestControllerTest {
+public class DriverControllerTest {
 
     private final String TIME_PATTERN = "HH:mm:ss";
     private final String DATE_FORMAT = "yyyy/MM/dd";

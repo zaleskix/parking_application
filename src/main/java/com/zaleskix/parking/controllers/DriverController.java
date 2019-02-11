@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @RequestMapping(DriverController.BASE_URL)
 public class DriverController {
 
-    static final String BASE_URL = "/driver";
+    public static final String BASE_URL = "/driver";
 
     private final DriverService driverService;
 

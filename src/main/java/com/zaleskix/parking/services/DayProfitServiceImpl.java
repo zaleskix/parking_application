@@ -1,6 +1,5 @@
 package com.zaleskix.parking.services;
 
-
 import com.zaleskix.parking.domain.CurrencyType;
 import com.zaleskix.parking.domain.DayProfit;
 import com.zaleskix.parking.domain.Driver;
@@ -12,7 +11,6 @@ import org.joda.money.CurrencyUnit;
 import org.joda.money.Money;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -61,13 +59,13 @@ public class DayProfitServiceImpl implements DayProfitService {
     }
 
     @Override
-    public void saveOrUpdateDayProfitWithGivenDate(String date, CurrencyType currencyType) {
+    public DayProfitDTO saveOrUpdateDayProfitWithGivenDate(String date, CurrencyType currencyType) {
         Optional<DayProfit> optionalDayProfit = dayProfitRepository.findByDate(date);
 
         if(optionalDayProfit.isPresent()) {
-            updateDayProfitWithSpecifiedCurrency(date, currencyType);
+            return updateDayProfitWithSpecifiedCurrency(date, currencyType);
         } else {
-            createNewDayWithInitialValuesAndSaveInDatabase(date, currencyType);
+            return  createNewDayWithInitialValuesAndSaveInDatabase(date, currencyType);
         }
 
     }
@@ -82,16 +80,13 @@ public class DayProfitServiceImpl implements DayProfitService {
         return null;
     }
 
-    private void updateDayProfitWithSpecifiedCurrency(String date, CurrencyType currencyType) {
-        
-        if (dayProfitRepository.findByDate(date).isPresent()) {
-            DayProfit dayProfit = dayProfitRepository.findByDate(date).get();
-            dayProfit.setCurrencyType(currencyType);
-            dayProfit.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
-            saveDayWithGivenDataInDatabaseAndReturnDTO(dayProfit);
-        } else {
-            logger.error("Given data is not valid. Day profit with given data does not exist.");
-        }
+    private DayProfitDTO updateDayProfitWithSpecifiedCurrency(String date, CurrencyType currencyType) {
+
+        DayProfit dayProfit = dayProfitRepository.findByDate(date).get();
+        dayProfit.setCurrencyType(currencyType);
+        dayProfit.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
+        saveDayWithGivenDataInDatabaseAndReturnDTO(dayProfit);
+        return dayProfitMapper.dayProfitToDayProfitDTO(dayProfit);
 
     }
 

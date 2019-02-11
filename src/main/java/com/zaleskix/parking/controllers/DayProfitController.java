@@ -11,7 +11,7 @@ import java.math.BigDecimal;
 @RequestMapping(DayProfitController.BASE_URL)
 public class DayProfitController {
 
-    static final String BASE_URL = "/day";
+    public static final String BASE_URL = "/day";
 
     private final DayProfitService dayProfitService;
 
@@ -23,6 +23,7 @@ public class DayProfitController {
     @ResponseStatus(HttpStatus.OK)
     public BigDecimal checkDayProfitPLN(@PathVariable String year, @PathVariable String month,
                                        @PathVariable String day, @PathVariable String currencyType) {
+
         String date = year + "/" + month + "/" + day;
         return dayProfitService.checkAmountOfProfitOnTheGivenDayWithSpecifiedCurrency(date, currencyType);
     }
