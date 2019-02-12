@@ -12,9 +12,9 @@ public interface DriverService {
 
     DriverDTO stopParkingMeterByLicensePlate(String licensePlate);
 
-    boolean checkTicketIsValidByLicensePlate(String licensePlate);
+    Boolean checkTicketIsValidByLicensePlate(String licensePlate);
 
-    boolean checkTicketIsValidById(String id);
+    Boolean checkTicketIsValidById(String id);
 
     DriverDTO findDriverByIdAndReturnDriverInfoAsDTO(String id);
 

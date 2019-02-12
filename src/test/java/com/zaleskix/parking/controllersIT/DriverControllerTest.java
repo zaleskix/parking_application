@@ -41,8 +41,8 @@ public class DriverControllerTest {
     private final String CURRENCY_TYPE = "PLN";
 
     private final BigDecimal STARTED_AMOUNT_TO_PAY = new BigDecimal(0.00);
-    private final boolean TICKET_IS_ACTIVE = true;
-    private final boolean TICKET_IS_NOT_ACTIVE = false;
+    private final Boolean TICKET_IS_ACTIVE = true;
+    private final Boolean TICKET_IS_NOT_ACTIVE = false;
     private final CurrencyType PLN_CURRENCY_TYPE = CurrencyType.PLN;
 
     @Autowired
@@ -131,7 +131,7 @@ public class DriverControllerTest {
                 .contentType(MediaType.APPLICATION_JSON_UTF8)
                 .accept(MediaType.ALL))
                 .andExpect(status().isOk())
-                .andExpect(content().string("false"));
+                .andExpect(content().string(""));
     }
 
     @Test

@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 @Service
@@ -52,9 +53,11 @@ public class DriverServiceImpl implements DriverService {
             return null;
         }
 
-        if ( driverRepository.findByLicensePlate(licensePlate).isPresent() ) {
+        Optional<Driver> optionalDriver = driverRepository.findByLicensePlate(licensePlate);
+
+        if ( optionalDriver.isPresent() ) {
             logger.info("Vehicle with given licence plate exist in database. Updating existing driver info ...");
-            Driver driver = driverRepository.findByLicensePlate(licensePlate).get();
+            Driver driver = optionalDriver.get();
             driver.setAmountToPay(BigDecimal.valueOf(0));
             driver.setCurrencyType(CurrencyType.valueOf(currecnyType));
             driver.setDriverType(DriverType.valueOf(driverType));
@@ -63,6 +66,7 @@ public class DriverServiceImpl implements DriverService {
         } else {
             logger.info("Vehicle with given licence plate not exist in database. Creating new Driver object ...");
             Driver driver = new Driver();
+            driver.setAmountToPay(BigDecimal.valueOf(0));
             driver.setDriverType(DriverType.valueOf(driverType));
             driver.setCurrencyType(CurrencyType.valueOf(currecnyType));
             driver.setLicensePlate(licensePlate);
@@ -73,30 +77,8 @@ public class DriverServiceImpl implements DriverService {
 
 
     @Override
-    public boolean checkTicketIsValidByLicensePlate(String licensePlate){
-        if ( driverRepository.findByLicensePlate(licensePlate).isPresent()) {
-            Driver driver = driverRepository.findByLicensePlate(licensePlate).get();
-            return driver.isTicketActive();
-        } else {
-            logger.error("Driver with given licence plate is not exist in database");
-            return false;
-        }
-    }
-
-
-    @Override
-    public boolean checkTicketIsValidById(String id) {
-        if ( driverRepository.findById(id).isPresent()) {
-            Driver driver = driverRepository.findById(id).get();
-            return driver.isTicketActive();
-        } else {
-            logger.error("Driver with given id is not exist in database");
-            return false;
-        }
-    }
-
-    @Override
     public DriverDTO stopParkingMeterById(String id) {
+
 
         DriverDTO returnedDriverDTO = driverRepository.findById(id)
                 .map(this::stopParkingMeterAndCalculateAmountToPayForGivenDriver)
@@ -110,6 +92,11 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public DriverDTO stopParkingMeterByLicensePlate(String licensePlate) {
 
+        if (! Pattern.matches(LICENCE_PLATE_PATTERN, licensePlate)) {
+            logger.error("This is not valid licence plate");
+            return null;
+        }
+
         DriverDTO driverDTO = driverRepository.findByLicensePlate(licensePlate)
                 .map(this::stopParkingMeterAndCalculateAmountToPayForGivenDriver)
                 .orElseThrow(ResourceNotFoundException::new);
@@ -117,6 +104,68 @@ public class DriverServiceImpl implements DriverService {
         driverDTO.setDriverUrl(getDriverUrl(driverRepository.findByLicensePlate(licensePlate).get()));
         dayProfitService.saveOrUpdateDayProfitWithGivenDate(driverDTO.getTransactionDay(), driverDTO.getCurrencyType());
         return driverDTO;
+    }
+
+    @Override
+    public Boolean checkTicketIsValidByLicensePlate(String licensePlate){
+
+        if (! Pattern.matches(LICENCE_PLATE_PATTERN, licensePlate)) {
+            logger.error("This is not valid licence plate");
+            return null;
+        }
+
+        Optional<Driver> optionalDriver = driverRepository.findByLicensePlate(licensePlate);
+
+        if ( optionalDriver.isPresent()) {
+            Driver driver = optionalDriver.get();
+            return driver.isTicketActive();
+        } else {
+            logger.error("Driver with given licence plate is not exist in database");
+            return null;
+        }
+    }
+
+
+    @Override
+    public Boolean checkTicketIsValidById(String id) {
+        if ( driverRepository.findById(id).isPresent()) {
+            Driver driver = driverRepository.findById(id).get();
+            return driver.isTicketActive();
+        } else {
+            logger.error("Driver with given id is not exist in database");
+            return false;
+        }
+    }
+
+    @Override
+    public DriverDTO findDriverByIdAndReturnDriverInfoAsDTO(String id) {
+
+        return driverRepository.findById(id)
+                .map(driver -> {
+                    DriverDTO driverDTOreturn = driverMapper.driverToDriverDTO(driver);
+                    driverDTOreturn.setDriverUrl(getDriverUrl(driver));
+                    return driverDTOreturn;
+                })
+                .orElseThrow(ResourceNotFoundException::new);
+
+    }
+
+    @Override
+    public DriverDTO findDriverByLicensePlateAndReturnDriverInfoAsDTO(String licensePlate) {
+
+        if (! Pattern.matches(LICENCE_PLATE_PATTERN, licensePlate)) {
+            logger.error("This is not valid licence plate");
+            return null;
+        }
+
+        return driverRepository.findByLicensePlate(licensePlate)
+                .map(driver -> {
+                    DriverDTO driverDTOreturn = driverMapper.driverToDriverDTO(driver);
+                    driverDTOreturn.setDriverUrl(getDriverUrl(driverMapper.driverDTOToDriver(driverDTOreturn)));
+                    return driverDTOreturn;
+                })
+                .orElseThrow(ResourceNotFoundException::new);
+
     }
 
     @Override
@@ -131,31 +180,6 @@ public class DriverServiceImpl implements DriverService {
         return driverDTO.getAmountToPay();
     }
 
-    @Override
-    public DriverDTO findDriverByIdAndReturnDriverInfoAsDTO(String id) {
-
-        return driverRepository.findById(id)
-                .map(driverMapper::driverToDriverDTO)
-                .map(driverDTOreturn -> {
-                    driverDTOreturn.setDriverUrl(getDriverUrl(driverMapper.driverDTOToDriver(driverDTOreturn)));
-                    return driverDTOreturn;
-                })
-                .orElseThrow(ResourceNotFoundException::new);
-
-    }
-
-    @Override
-    public DriverDTO findDriverByLicensePlateAndReturnDriverInfoAsDTO(String licensePlate) {
-
-        return driverRepository.findByLicensePlate(licensePlate)
-                .map(driverMapper::driverToDriverDTO)
-                .map(driverDTOreturn -> {
-                    driverDTOreturn.setDriverUrl(getDriverUrl(driverMapper.driverDTOToDriver(driverDTOreturn)));
-                    return driverDTOreturn;
-                })
-                .orElseThrow(ResourceNotFoundException::new);
-
-    }
 
     //===========================
     // HELPERS METHODS

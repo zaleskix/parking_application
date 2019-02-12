@@ -29,13 +29,13 @@ public class DriverController {
 
     @GetMapping({"/check/ID/{id}"})
     @ResponseStatus(HttpStatus.OK)
-    public boolean checkTicketValidByID(@PathVariable Long id) {
+    public Boolean checkTicketValidByID(@PathVariable Long id) {
         return driverService.checkTicketIsValidById(String.valueOf(id));
     }
 
     @GetMapping({"/check/{licensePlate}/"})
     @ResponseStatus(HttpStatus.OK)
-    public boolean checkTicketValidByLicencePlate(@PathVariable String licensePlate) {
+    public Boolean checkTicketValidByLicencePlate(@PathVariable String licensePlate) {
         return driverService.checkTicketIsValidByLicensePlate(licensePlate);
     }
 

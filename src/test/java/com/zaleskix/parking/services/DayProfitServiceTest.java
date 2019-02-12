@@ -51,7 +51,7 @@ public class DayProfitServiceTest {
         setCurrentDatesToVariables();
 
         MockitoAnnotations.initMocks(this);
-        dayProfitService = new DayProfitServiceImpl(driverRepository, dayProfitRepository, DayProfitMapper.INSTANCE);
+        dayProfitService = new DayProfitServiceImpl(driverRepository, dayProfitRepository, dayProfitMapper);
 
     }
 
@@ -72,18 +72,17 @@ public class DayProfitServiceTest {
     public void getDayProfitAsDTOWithSpecifiedCurrencyIncludedShouldReturnDayProfitAsDTOWhenExistInDatabase() {
         String currencyDate = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(DATE_FORMAT);
 
-        DayProfit dayProfit = new DayProfit();
-        dayProfit.setCurrencyType(CurrencyType.PLN);
-        dayProfit.setDate(currencyDate);
-        dayProfit.setProfit(BigDecimal.valueOf(1.20));
+        DayProfit dayProfit = createDayProfitWithDefaultData(currencyDate);
+        DayProfitDTO dayProfitDTO = createDayProfitDTOWithDefaultData(currencyDate);
 
         when(dayProfitRepository.findByDate(anyString())).thenReturn(Optional.ofNullable(dayProfit));
+        when(dayProfitMapper.dayProfitToDayProfitDTO(any())).thenReturn(dayProfitDTO);
 
-        DayProfitDTO dayProfitDTO = dayProfitService.getDayProfitAsDTOWithSpecifiedCurrencyIncluded(currencyDate, CURRENCY_TYPE_AS_STRING);
+        DayProfitDTO returnedDayProfitDTO = dayProfitService.getDayProfitAsDTOWithSpecifiedCurrencyIncluded(currencyDate, CURRENCY_TYPE_AS_STRING);
 
-        assertEquals(currencyDate, dayProfitDTO.getDate());
-        assertEquals(BigDecimal.valueOf(1.20), dayProfitDTO.getProfit());
-        assertEquals(CurrencyType.PLN, dayProfitDTO.getCurrencyType());
+        assertEquals(currencyDate, returnedDayProfitDTO.getDate());
+        assertEquals(BigDecimal.valueOf(1.20), returnedDayProfitDTO.getProfit());
+        assertEquals(CurrencyType.PLN, returnedDayProfitDTO.getCurrencyType());
     }
 
     @Test
@@ -97,12 +96,11 @@ public class DayProfitServiceTest {
     public void checkAmountOfProfitOnTheGivenDayWithSpecifiedCurrencyShouldReturnDayProfitAsDTOWhenExistInDatabase() {
         String currencyDate = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(DATE_FORMAT);
 
-        DayProfit dayProfit = new DayProfit();
-        dayProfit.setCurrencyType(CurrencyType.PLN);
-        dayProfit.setDate(currencyDate);
-        dayProfit.setProfit(BigDecimal.valueOf(1.20));
+        DayProfit dayProfit = createDayProfitWithDefaultData(currencyDate);
+        DayProfitDTO dayProfitDTO = createDayProfitDTOWithDefaultData(currencyDate);
 
         when(dayProfitRepository.findByDate(anyString())).thenReturn(Optional.ofNullable(dayProfit));
+        when(dayProfitMapper.dayProfitToDayProfitDTO(any())).thenReturn(dayProfitDTO);
 
         BigDecimal profit = dayProfitService.checkAmountOfProfitOnTheGivenDayWithSpecifiedCurrency(currencyDate, CURRENCY_TYPE_AS_STRING);
 
@@ -131,18 +129,13 @@ public class DayProfitServiceTest {
     public void saveOrUpdateDayProfitWithGivenDateShouldCreateNewDayProfitInDatabaseAndReturnAsDTO() {
         String currencyDate = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(DATE_FORMAT);
 
-        DayProfitDTO dayProfitDTO = new DayProfitDTO();
-        dayProfitDTO.setCurrencyType(CurrencyType.PLN);
-        dayProfitDTO.setDate(currencyDate);
-        dayProfitDTO.setProfit(BigDecimal.valueOf(1.20));
-
-        DayProfit dayProfit = new DayProfit();
-        dayProfit.setCurrencyType(CurrencyType.PLN);
-        dayProfit.setDate(currencyDate);
-        dayProfit.setProfit(BigDecimal.valueOf(1.20));
+        DayProfit dayProfit = createDayProfitWithDefaultData(currencyDate);
+        DayProfitDTO dayProfitDTO = createDayProfitDTOWithDefaultData(currencyDate);
 
         when(dayProfitRepository.save(any())).thenReturn(dayProfit);
         when(dayProfitMapper.dayProfitToDayProfitDTO(any())).thenReturn(dayProfitDTO);
+        when(dayProfitMapper.dayProfitDTOToDayProfit(any())).thenReturn(dayProfit);
+
 
         DayProfitDTO returnedDayProfitDTO = dayProfitService.saveOrUpdateDayProfitWithGivenDate(currencyDate, CurrencyType.PLN);
 
@@ -155,16 +148,19 @@ public class DayProfitServiceTest {
     public void saveOrUpdateDayProfitWithGivenDateShouldUpdateDayProfitInDatabaseAndReturnAsDTO() {
         String currencyDate = getCurrentDateTimeAndReturnDateTimeAsStringWithPattern(DATE_FORMAT);
 
-        DayProfitDTO existingDayProfitDTO = new DayProfitDTO();
-        existingDayProfitDTO.setCurrencyType(CurrencyType.PLN);
+        Driver driver = new Driver();
+        driver.setTransactionDay(currencyDate);
+        driver.setAmountToPay(BigDecimal.valueOf(1.21));
 
         DayProfit existingDayProfit = new DayProfit();
         existingDayProfit.setDate(currencyDate);
         existingDayProfit.setCurrencyType(CurrencyType.PLN);
 
-        Driver driver = new Driver();
-        driver.setTransactionDay(currencyDate);
-        driver.setAmountToPay(BigDecimal.valueOf(1.21));
+        DayProfitDTO existingDayProfitDTO = new DayProfitDTO();
+        existingDayProfitDTO.setCurrencyType(existingDayProfit.getCurrencyType());
+        existingDayProfitDTO.setProfit(driver.getAmountToPay());
+        existingDayProfitDTO.setDate(currencyDate);
+
 
         List<Driver> drivers = new ArrayList<>();
         drivers.add(driver);
@@ -197,6 +193,24 @@ public class DayProfitServiceTest {
         Date currDate = new Date();
         DateFormat timeFormat = new SimpleDateFormat(pattern);
         return timeFormat.format(currDate);
+    }
+
+    private DayProfitDTO createDayProfitDTOWithDefaultData(String currencyDate) {
+
+        DayProfitDTO dayProfitDTO = new DayProfitDTO();
+        dayProfitDTO.setCurrencyType(CurrencyType.PLN);
+        dayProfitDTO.setDate(currencyDate);
+        dayProfitDTO.setProfit(BigDecimal.valueOf(1.20));
+        return dayProfitDTO;
+    }
+
+    private DayProfit createDayProfitWithDefaultData (String currencyDate){
+        DayProfit dayProfit = new DayProfit();
+        dayProfit.setCurrencyType(CurrencyType.PLN);
+        dayProfit.setDate(currencyDate);
+        dayProfit.setProfit(BigDecimal.valueOf(1.20));
+
+        return dayProfit;
     }
 
 }
