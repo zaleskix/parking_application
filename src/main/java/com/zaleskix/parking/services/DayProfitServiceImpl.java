@@ -84,7 +84,6 @@ public class DayProfitServiceImpl implements DayProfitService {
 
         DayProfit dayProfit = dayProfitRepository.findByDate(date).get();
         dayProfit.setCurrencyType(currencyType);
-        System.out.println(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
         dayProfit.setProfit(calculateAndReturnDayProfitForGivenDayAndWithGivenCurrencyType(date,currencyType).getAmount());
         saveDayWithGivenDataInDatabaseAndReturnDTO(dayProfit);
         return dayProfitMapper.dayProfitToDayProfitDTO(dayProfit);
